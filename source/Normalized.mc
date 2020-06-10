@@ -3,11 +3,11 @@ using Toybox.Math;
 class Normalized {
   const SIZE = 30;
 
-  var total;
-  var count;
-  var rollingWindow;
-  var sum;
-  var index;
+  hidden var total;
+  hidden var count;
+  hidden var rollingWindow;
+  hidden var sum;
+  hidden var index;
 
   function initialize() {
     total = 0.0d;

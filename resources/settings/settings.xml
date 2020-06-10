@@ -1,0 +1,5 @@
+<settings>
+  <setting propertyKey="@Properties.trendDuration" title="@Strings.trendDurationTitle" prompt="@Strings.trendDurationPrompt">
+    <settingConfig type="numeric" errorMessage="@Strings.trendDurationError" required="true" min="2" max="3600"/>
+  </setting>
+</settings>

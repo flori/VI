@@ -1,0 +1,3 @@
+<properties>
+  <property id="trendDuration" type="number">60</property>
+</properties>

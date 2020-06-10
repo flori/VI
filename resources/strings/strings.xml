@@ -1,3 +1,6 @@
 <strings>
     <string id="AppName">VI</string>
+    <string id="trendDurationTitle">Trend is computed for the last this many seconds</string>
+    <string id="trendDurationPrompt">Enter your trend duration in seconds</string>
+    <string id="trendDurationError">Legal values are between 1-3600 seconds</string>
 </strings>

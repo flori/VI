@@ -2,28 +2,28 @@ using Toybox.WatchUi;
 
 class VIDataFieldView extends WatchUi.DataField {
   const INITIAL_VI_VALUE = "_.___";
-  var viValue = INITIAL_VI_VALUE;
-  var viTrend = new Trend();
-  var viLapValue = INITIAL_VI_VALUE;
-  var viLapTrend = new Trend();
+  hidden var viValue = INITIAL_VI_VALUE;
+  hidden var viTrend;
+  hidden var viLapValue = INITIAL_VI_VALUE;
+  hidden var viLapTrend;
 
   const INITIAL_POWER_VALUE = "___W";
-  var avgPowerValue = INITIAL_POWER_VALUE;
-  var avgLapPowerValue = INITIAL_POWER_VALUE;
-  var nrmPowerValue = INITIAL_POWER_VALUE;
-  var nrmLapPowerValue = INITIAL_POWER_VALUE;
+  hidden var avgPowerValue = INITIAL_POWER_VALUE;
+  hidden var avgLapPowerValue = INITIAL_POWER_VALUE;
+  hidden var nrmPowerValue = INITIAL_POWER_VALUE;
+  hidden var nrmLapPowerValue = INITIAL_POWER_VALUE;
 
-  var avg;
-  var avgTrend = new Trend();
-  var avgLap;
-  var avgLapTrend = new Trend();
+  hidden var avg;
+  hidden var avgTrend;
+  hidden var avgLap;
+  hidden var avgLapTrend;
 
-  var nrm;
-  var nrmTrend = new Trend();
-  var nrmLap;
-  var nrmLapTrend = new Trend();
+  hidden var nrm;
+  hidden var nrmTrend;
+  hidden var nrmLap;
+  hidden var nrmLapTrend;
 
-  var showLap;
+  hidden var showLap;
 
   function initialize() {
     DataField.initialize();
@@ -93,19 +93,44 @@ class VIDataFieldView extends WatchUi.DataField {
 
   function resetLap() {
     avgLap = new Average();
-    avgLapTrend = new Trend();
     nrmLap = new Normalized();
-    nrmLapTrend = new Trend();
-    viLapTrend = new Trend();
+    resetLapTrend();
   }
 
   function reset() {
     resetLap();
     avg = new Average();
-    avgTrend = new Trend();
     nrm = new Normalized();
-    nrmTrend = new Trend();
-    viTrend = new Trend();
+    resetTrend();
+  }
+
+  function trendDuration() {
+    var size = 60;
+    if (Application has :Properties) {
+      size = Application.Properties.getValue("trendDuration").toNumber();
+    }
+    return size;
+  }
+
+  function resetTrend() {
+    var size = trendDuration();
+    System.println("Configure trends for " + size + " seconds duration");
+    avgTrend = new Trend(size);
+    nrmTrend = new Trend(size);
+    viTrend = new Trend(size);
+  }
+
+  function resetLapTrend() {
+    var size = trendDuration();
+    System.println("Configure lap trends for " + size + " seconds duration");
+    avgLapTrend= new Trend(size);
+    nrmLapTrend = new Trend(size);
+    viLapTrend = new Trend(size);
+  }
+
+  function reconfigure() {
+    resetTrend();
+    resetLapTrend();
   }
 
   function toggleLapState() {

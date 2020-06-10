@@ -4,12 +4,12 @@ class Trend {
   const DOWN = -1;
   const UP   = 1;
 
-  var buffer;
-  var index;
-  var size;
+  hidden var buffer;
+  hidden var index;
+  hidden var size;
 
-  function initialize() {
-    size = SIZE;
+  function initialize(sizeValue) {
+    size = sizeValue;
     buffer = createBuffer(size);
     index = 0;
   }

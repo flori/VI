@@ -1,6 +1,6 @@
 class Average {
-  var total;
-  var count;
+  hidden var total;
+  hidden var count;
 
   function initialize() {
     total = 0.0d;

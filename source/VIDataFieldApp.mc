@@ -2,7 +2,7 @@ using Toybox.Application;
 using Toybox.Test;
 
 class VIDataFieldApp extends Application.AppBase {
-  var field;
+  hidden var field;
 
   function initialize() {
     AppBase.initialize();
@@ -21,5 +21,9 @@ class VIDataFieldApp extends Application.AppBase {
 
   function toggleLapState() {
     return field.toggleLapState();
+  }
+
+  function onSettingsChanged() {
+    field.reconfigure();
   }
 }
