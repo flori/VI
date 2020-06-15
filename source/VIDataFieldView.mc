@@ -25,9 +25,12 @@ class VIDataFieldView extends WatchUi.DataField {
 
   hidden var showLap;
 
+  hidden var excludeZero;
+
   function initialize() {
     DataField.initialize();
     showLap = true;
+    configureExcludeZero();
     reset();
   }
 
@@ -48,6 +51,12 @@ class VIDataFieldView extends WatchUi.DataField {
     if (info has :currentPower && info.currentPower != null) {
       currentPower = info.currentPower;
     }
+
+    if (excludeZero && currentPower == 0) {
+      System.println("Excluding zero power value.");
+      return;
+    }
+    System.println("Power value currently measured: " + currentPower + "W");
 
     var averagePower = avg.add(currentPower).compute();
     avgTrend.add(averagePower);
@@ -128,9 +137,17 @@ class VIDataFieldView extends WatchUi.DataField {
     viLapTrend = new Trend(size);
   }
 
+  function configureExcludeZero() {
+    excludeZero = false;
+    if (Application has :Properties) {
+      excludeZero = Application.Properties.getValue("excludeZero");
+    }
+  }
+
   function reconfigure() {
     resetTrend();
     resetLapTrend();
+    configureExcludeZero();
   }
 
   function toggleLapState() {

@@ -2,4 +2,7 @@
   <setting propertyKey="@Properties.trendDuration" title="@Strings.trendDurationTitle" prompt="@Strings.trendDurationPrompt">
     <settingConfig type="numeric" errorMessage="@Strings.trendDurationError" required="true" min="2" max="3600"/>
   </setting>
+  <setting propertyKey="@Properties.excludeZero" title="@Strings.excludeZeroTitle">
+    <settingConfig type="boolean" errorMessage="@Strings.excludeZeroError" required="true"/>
+  </setting>
 </settings>

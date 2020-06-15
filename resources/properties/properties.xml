@@ -1,3 +1,4 @@
 <properties>
   <property id="trendDuration" type="number">60</property>
+  <property id="excludeZero" type="boolean">false</property>
 </properties>
