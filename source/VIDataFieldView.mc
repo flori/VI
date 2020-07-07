@@ -1,10 +1,9 @@
 using Toybox.WatchUi;
 
 class VIDataFieldView extends WatchUi.DataField {
-  const INITIAL_VI_VALUE = "_.___";
-  hidden var viValue = INITIAL_VI_VALUE;
+  hidden var viValue = new DivisionValue("_.___");
   hidden var viTrend;
-  hidden var viLapValue = INITIAL_VI_VALUE;
+  hidden var viLapValue = new DivisionValue("_.___");
   hidden var viLapTrend;
 
   const INITIAL_POWER_VALUE = "___W";
@@ -82,18 +81,14 @@ class VIDataFieldView extends WatchUi.DataField {
     avgNrmLapTrend.add(avgNormalizedLapPower);
     avgNrmLapPowerValue = avgNormalizedLapPower.format("%u") + "W";
 
-    viValue = INITIAL_VI_VALUE;
-    if (averagePower != 0) {
-      var vi = avgNormalizedPower / averagePower;
+    var vi = viValue.compute(avgNormalizedPower, averagePower);
+    if (vi != null) {
       viTrend.add(vi);
-      viValue = vi.format("%.3f");
     }
 
-    viLapValue = INITIAL_VI_VALUE;
-    if (averageLapPower != 0) {
-      var viLap = avgNormalizedLapPower / averageLapPower;
+    var viLap = viLapValue.compute(avgNormalizedLapPower, averageLapPower);
+    if (viLap != null) {
       viLapTrend.add(viLap);
-      viLapValue = viLap.format("%.3f");
     }
   }
 
@@ -258,7 +253,7 @@ class VIDataFieldView extends WatchUi.DataField {
       [ Graphics.FONT_NUMBER_THAI_HOT, Graphics.FONT_NUMBER_HOT, Graphics.FONT_NUMBER_MEDIUM, Graphics.FONT_NUMBER_MILD, Graphics.FONT_MEDIUM, Graphics.FONT_SMALL, Graphics.FONT_TINY ],
       2
     );
-    var t = showLap ? viLapValue : viValue;
+    var t = showLap ? viLapValue.format() : viValue.format();
     dc.drawText(
       dc.getWidth() / 2,
       dc.getHeight() - font[1] - 1,
@@ -295,7 +290,7 @@ class VIDataFieldView extends WatchUi.DataField {
       [ Graphics.FONT_NUMBER_THAI_HOT, Graphics.FONT_NUMBER_HOT, Graphics.FONT_NUMBER_MEDIUM, Graphics.FONT_NUMBER_MILD, Graphics.FONT_MEDIUM, Graphics.FONT_SMALL, Graphics.FONT_TINY ],
       2
     );
-    var t = showLap ? viLapValue : viValue;
+    var t = showLap ? viLapValue.format() : viValue.format();
     dc.drawText(
       dc.getWidth() / 4 + dc.getTextWidthInPixels(".", font[0]),
       dc.getHeight() - font[1] - 1,
