@@ -10,8 +10,8 @@ class VIDataFieldView extends WatchUi.DataField {
   const INITIAL_POWER_VALUE = "___W";
   hidden var avgPowerValue = INITIAL_POWER_VALUE;
   hidden var avgLapPowerValue = INITIAL_POWER_VALUE;
-  hidden var nrmPowerValue = INITIAL_POWER_VALUE;
-  hidden var nrmLapPowerValue = INITIAL_POWER_VALUE;
+  hidden var avgNrmPowerValue = INITIAL_POWER_VALUE;
+  hidden var avgNrmLapPowerValue = INITIAL_POWER_VALUE;
 
   hidden var avg;
   hidden var avgTrend;
@@ -19,9 +19,10 @@ class VIDataFieldView extends WatchUi.DataField {
   hidden var avgLapTrend;
 
   hidden var nrm;
-  hidden var nrmTrend;
-  hidden var nrmLap;
-  hidden var nrmLapTrend;
+  hidden var avgNrm;
+  hidden var avgNrmTrend;
+  hidden var avgNrmLap;
+  hidden var avgNrmLapTrend;
 
   hidden var showLap;
 
@@ -58,32 +59,39 @@ class VIDataFieldView extends WatchUi.DataField {
     }
     System.println("Power value currently measured: " + currentPower + "W");
 
+    // Average power
     var averagePower = avg.add(currentPower).compute();
     avgTrend.add(averagePower);
     avgPowerValue = averagePower.format("%u") + "W";
 
-    var normalizedPower = nrm.add(currentPower).compute();
-    nrmTrend.add(normalizedPower);
-    nrmPowerValue = normalizedPower.format("%u") + "W";
-
-    viValue = INITIAL_VI_VALUE;
-    if (averagePower != 0) {
-      var vi = normalizedPower / averagePower;
-      viTrend.add(vi);
-      viValue = vi.format("%.3f");
-    }
-
+    // Average Lap Power
     var averageLapPower = avgLap.add(currentPower).compute();
     avgLapTrend.add(averageLapPower);
     avgLapPowerValue = averageLapPower.format("%u") + "W";
 
-    var normalizedLapPower = nrmLap.add(currentPower).compute();
-    nrmLapTrend.add(normalizedLapPower);
-    nrmLapPowerValue = normalizedLapPower.format("%u") + "W";
+    // Current Normalized Power
+    var normalizedPower = nrm.add(currentPower).compute();
+
+    // Average Normalized Power
+    var avgNormalizedPower = avgNrm.add(normalizedPower).compute();
+    avgNrmTrend.add(avgNormalizedPower);
+    avgNrmPowerValue = avgNormalizedPower.format("%u") + "W";
+
+    // Average Normalized Lap Power
+    var avgNormalizedLapPower = avgNrmLap.add(normalizedPower).compute();
+    avgNrmLapTrend.add(avgNormalizedLapPower);
+    avgNrmLapPowerValue = avgNormalizedLapPower.format("%u") + "W";
+
+    viValue = INITIAL_VI_VALUE;
+    if (averagePower != 0) {
+      var vi = avgNormalizedPower / averagePower;
+      viTrend.add(vi);
+      viValue = vi.format("%.3f");
+    }
 
     viLapValue = INITIAL_VI_VALUE;
     if (averageLapPower != 0) {
-      var viLap = normalizedLapPower / averageLapPower;
+      var viLap = avgNormalizedLapPower / averageLapPower;
       viLapTrend.add(viLap);
       viLapValue = viLap.format("%.3f");
     }
@@ -102,14 +110,15 @@ class VIDataFieldView extends WatchUi.DataField {
 
   function resetLap() {
     avgLap = new Average();
-    nrmLap = new Normalized();
+    avgNrmLap = new Average();
     resetLapTrend();
   }
 
   function reset() {
     resetLap();
-    avg = new Average();
     nrm = new Normalized();
+    avg = new Average();
+    avgNrm = new Average();
     resetTrend();
   }
 
@@ -125,7 +134,7 @@ class VIDataFieldView extends WatchUi.DataField {
     var size = trendDuration();
     System.println("Configure trends for " + size + " seconds duration");
     avgTrend = new Trend(size);
-    nrmTrend = new Trend(size);
+    avgNrmTrend = new Trend(size);
     viTrend = new Trend(size);
   }
 
@@ -133,7 +142,7 @@ class VIDataFieldView extends WatchUi.DataField {
     var size = trendDuration();
     System.println("Configure lap trends for " + size + " seconds duration");
     avgLapTrend= new Trend(size);
-    nrmLapTrend = new Trend(size);
+    avgNrmLapTrend = new Trend(size);
     viLapTrend = new Trend(size);
   }
 
@@ -332,7 +341,7 @@ class VIDataFieldView extends WatchUi.DataField {
     );
     drawTrend(
       dc,
-      showLap ? nrmLapTrend.direction() : nrmTrend.direction(),
+      showLap ? avgNrmLapTrend.direction() : avgNrmTrend.direction(),
       dc.getWidth() / 2 + 1 + twNP + dc.getTextWidthInPixels(".", font[0]),
       dc.getHeight() - 2 * font[1] - 1,
       dc.getWidth() / 24,
@@ -342,7 +351,7 @@ class VIDataFieldView extends WatchUi.DataField {
       dc.getWidth() - 4,
       dc.getHeight() - 2 * font[1] - 1,
       font[0],
-      showLap ? nrmLapPowerValue : nrmPowerValue,
+      showLap ? avgNrmLapPowerValue : avgNrmPowerValue,
       Graphics.TEXT_JUSTIFY_RIGHT
     );
     drawTrend(
