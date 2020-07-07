@@ -15,7 +15,7 @@ class DivisionValue {
     return value;
   }
 
-  function format() {
+  function toString() {
     if (value == null) {
       return initialValue;
     } else {
