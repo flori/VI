@@ -36,7 +36,7 @@ class Normalized {
   }
 
   function compute() {
-    if (count > 0) {
+    if (count >= 30) {
       return Math.pow(total / count, 0.25);
     } else {
       return null;

@@ -71,6 +71,10 @@ class VIDataFieldView extends WatchUi.DataField {
     // Current Normalized Power
     var normalizedPower = nrm.add(currentPower).compute();
 
+    if (normalizedPower == null) {
+      return;
+    }
+
     // Average Normalized Power
     var avgNormalizedPower = avgNrm.add(normalizedPower).compute();
     avgNrmTrend.add(avgNormalizedPower);
