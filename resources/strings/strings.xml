@@ -1,8 +1,10 @@
 <strings>
-    <string id="AppName">VI</string>
-    <string id="trendDurationTitle">Trend is computed for the last this many seconds</string>
-    <string id="trendDurationPrompt">Enter your trend duration in seconds</string>
-    <string id="trendDurationError">Legal values are between 1-3600 seconds</string>
-    <string id="excludeZeroTitle">Exclude zero power values from computation (if you're not pedaling)</string>
-    <string id="excludeZeroError">Legal values are true or false</string>
+  <string id="AppName">VI</string>
+  <string id="trendDurationTitle">Trend is computed for the last this many seconds</string>
+  <string id="trendDurationPrompt">Enter your trend duration in seconds</string>
+  <string id="trendDurationError">Legal values are between 1-3600 seconds</string>
+  <string id="excludeZeroTitle">Exclude zero power values from computation (if you're not pedaling)</string>
+  <string id="excludeZeroError">Legal values are true or false</string>
+  <string id="ftpTitle">Your FTP (functional threshold power/TP) value in W</string>
+  <string id="ftpError">Legal values are between 0-999 W</string>
 </strings>

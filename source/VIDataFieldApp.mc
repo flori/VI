@@ -19,8 +19,8 @@ class VIDataFieldApp extends Application.AppBase {
     return [ field, new VIDataFieldDelegate() ];
   }
 
-  function toggleLapState() {
-    return field.toggleLapState();
+  function toggleDisplayState() {
+    return field.toggleDisplayState();
   }
 
   function onSettingsChanged() {

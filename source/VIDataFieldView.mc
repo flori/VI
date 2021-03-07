@@ -1,4 +1,5 @@
 using Toybox.WatchUi;
+using DrawHelper;
 
 class VIDataFieldView extends WatchUi.DataField {
   hidden var viValue = new DivisionValue("_.___");
@@ -11,6 +12,14 @@ class VIDataFieldView extends WatchUi.DataField {
   hidden var avgNrmPowerValue = new NullableValue("%u", "W", "___");
   hidden var avgNrmLapPowerValue = new NullableValue("%u", "W", "___");
 
+  hidden var ifValue = new DivisionValue("_.___");
+  hidden var ifTrend;
+  hidden var ifLapValue = new DivisionValue("_.___");
+  hidden var ifLapTrend;
+  hidden var ftpValue = new NullableValue("%u", "W", "___");
+  hidden var ftp = 255.0;
+  hidden var ftpTrend = new NoTrend();
+
   hidden var avg;
   hidden var avgTrend;
   hidden var avgLap;
@@ -22,14 +31,22 @@ class VIDataFieldView extends WatchUi.DataField {
   hidden var avgNrmLap;
   hidden var avgNrmLapTrend;
 
-  hidden var showLap;
+  hidden var displayState;
 
   hidden var excludeZero;
 
+  enum {
+    STD,
+    LAP,
+    IF_STD,
+    IF_LAP,
+  }
+
   function initialize() {
     DataField.initialize();
-    showLap = true;
+    displayState = LAP;
     configureExcludeZero();
+    configureFTP();
     reset();
   }
 
@@ -93,6 +110,18 @@ class VIDataFieldView extends WatchUi.DataField {
     if (viLap != null) {
       viLapTrend.add(viLap);
     }
+
+    var intensity = ifValue.compute(avgNormalizedPower, ftp);
+    if (intensity != null) {
+      ifTrend.add(intensity);
+    }
+
+    var intensityLap = ifLapValue.compute(avgNormalizedLapPower, ftp);
+    if (intensityLap != null) {
+      ifLapTrend.add(intensityLap);
+    }
+
+    ftpValue.set(ftp);
   }
 
   function onUpdate(dc) {
@@ -100,9 +129,51 @@ class VIDataFieldView extends WatchUi.DataField {
 
     var ratio = dc.getWidth().toFloat() / dc.getHeight();
     if (ratio < 3) {
-      drawNarrowDisplay(dc);
+      switch (displayState) {
+        case STD:
+          new NarrowDisplay(dc, new ValueData("VI", viValue, viTrend)).draw();
+          break;
+        case LAP:
+          new NarrowDisplay(dc, new ValueData("VI Lap", viLapValue, viLapTrend)).draw();
+          break;
+        case IF_STD:
+          new NarrowDisplay(dc, new ValueData("IF", ifValue, ifTrend)).draw();
+          break;
+        case IF_LAP:
+          new NarrowDisplay(dc, new ValueData("IF Lap", ifLapValue, ifLapTrend)).draw();
+          break;
+      }
     } else {
-      drawWideDisplay(dc);
+      switch (displayState) {
+        case STD:
+          new WideDisplay(dc,
+            new ValueData("VI", viValue, viTrend),
+            new ValueData("NP", avgNrmPowerValue, avgNrmTrend),
+            new ValueData("AP", avgPowerValue, avgTrend)
+          ).draw();
+          break;
+        case LAP:
+          new WideDisplay(dc,
+            new ValueData("VI Lap", viLapValue, viLapTrend),
+            new ValueData("NP", avgNrmLapPowerValue, avgNrmLapTrend),
+            new ValueData("AP", avgLapPowerValue, avgLapTrend)
+          ).draw();
+          break;
+        case IF_STD:
+          new WideDisplay(dc,
+            new ValueData("IF", ifValue, ifTrend),
+            new ValueData("NP", avgNrmPowerValue, avgNrmTrend),
+            new ValueData("TP", ftpValue, ftpTrend)
+          ).draw();
+          break;
+        case IF_LAP:
+          new WideDisplay(dc,
+            new ValueData("IF Lap", ifLapValue, ifLapTrend),
+            new ValueData("NP", avgNrmLapPowerValue, avgNrmLapTrend),
+            new ValueData("TP", ftpValue, ftpTrend)
+          ).draw();
+          break;
+      }
     }
   }
 
@@ -140,6 +211,7 @@ class VIDataFieldView extends WatchUi.DataField {
     avgTrend = new Trend(size);
     avgNrmTrend = new Trend(size);
     viTrend = new Trend(size);
+    ifTrend = new Trend(size);
   }
 
   function resetLapTrend() {
@@ -148,6 +220,7 @@ class VIDataFieldView extends WatchUi.DataField {
     avgLapTrend= new Trend(size);
     avgNrmLapTrend = new Trend(size);
     viLapTrend = new Trend(size);
+    ifLapTrend = new Trend(size);
   }
 
   function configureExcludeZero() {
@@ -157,58 +230,26 @@ class VIDataFieldView extends WatchUi.DataField {
     }
   }
 
+  function configureFTP() {
+    ftp = 0.0;
+    if (Application has :Properties) {
+      ftp = Application.Properties.getValue("ftp").toDouble();
+    }
+  }
+
   function reconfigure() {
     resetTrend();
     resetLapTrend();
     configureExcludeZero();
+    configureFTP();
   }
 
-  function toggleLapState() {
-    showLap = !showLap;
+  function toggleDisplayState() {
+    displayState = (displayState + 1) % 4;
+    System.println("Switch to display state " + displayState);
   }
 
   private
-
-  function sortFonts(dc, a) {
-    var aSize = a.size();
-
-    for (var i = 0; i < aSize; i++) {
-      a[i] = [ a[i], dc.getFontHeight(a[i]) ];
-    }
-
-    for (var i = 0; i < aSize - 1; i++) {
-      var m = i;
-
-      for (var j = i + 1; j < aSize; j++) {
-        if (a[j][1] > a[m][1]) {
-          m = j;
-        }
-      }
-
-      if (m != i) {
-        var tmp = a[i];
-        a[i] = a[m];
-        a[m] = tmp;
-      }
-    }
-
-    for (var i = 0; i < aSize; i++) {
-      a[i] = a[i][0];
-    }
-  }
-
-  function determineFont(dc, fonts, divisor) {
-    sortFonts(dc, fonts);
-    var requestedHeight = dc.getHeight().toFloat() / divisor;
-    var font = fonts[fonts.size() - 1];
-    for (var i = 0; i < fonts.size(); i++) {
-      if (dc.getFontHeight(fonts[i]) <= requestedHeight) {
-        font = fonts[i];
-        break;
-      }
-    }
-    return [ font, dc.getFontHeight(font) ];
-  }
 
   function setColors(dc) {
     var backgroundColor = getBackgroundColor();
@@ -219,159 +260,5 @@ class VIDataFieldView extends WatchUi.DataField {
 
     dc.setColor(dataColor, backgroundColor);
     dc.clear();
-  }
-
-  function drawTrend(dc, direction, x, y, w, h) {
-    var pw = dc.getHeight() / 40;
-    if (pw > 8) {
-      pw = 4;
-    }
-    y += h * 30 / 100;
-    h = h * 625 / 1000;
-    h -= 6 * pw;
-    dc.fillPolygon(
-      [ [ x, y + h / 2 - pw ], [ x + w, y + h / 2 - pw ], [ x + w, y + h / 2 + pw], [ x, y + h / 2 + pw ] ]
-    );
-    if (direction == Trend.UP) {
-      dc.fillPolygon(
-        [ [ x, y + h / 2 - pw * 3 ], [ x + w / 2, y - pw * 3 ], [ x + w, y + h / 2 - pw * 3 ] ]
-      );
-    }
-    if (direction == Trend.DOWN) {
-      dc.fillPolygon(
-        [ [ x, y + h / 2 + pw * 3 ], [ x + w / 2, y + h + pw * 3 ], [ x + w, y + h / 2 + pw * 3 ] ]
-      );
-    }
-  }
-
-  function drawNarrowDisplay(dc) {
-    var font = determineFont(
-      dc,
-      [ Graphics.FONT_LARGE, Graphics.FONT_MEDIUM, Graphics.FONT_SMALL, Graphics.FONT_TINY ],
-      2
-    );
-    dc.drawText(
-      dc.getWidth() / 2,
-      2,
-      font[0],
-      showLap ? "VI Lap" : "VI",
-      Graphics.TEXT_JUSTIFY_CENTER
-    );
-    font = determineFont(
-      dc,
-      [ Graphics.FONT_NUMBER_THAI_HOT, Graphics.FONT_NUMBER_HOT, Graphics.FONT_NUMBER_MEDIUM, Graphics.FONT_NUMBER_MILD, Graphics.FONT_MEDIUM, Graphics.FONT_SMALL, Graphics.FONT_TINY ],
-      2
-    );
-    var t = (showLap ? viLapValue : viValue).toString();
-    dc.drawText(
-      dc.getWidth() / 2,
-      dc.getHeight() - font[1] - 1,
-      font[0],
-      t,
-      Graphics.TEXT_JUSTIFY_CENTER
-    );
-    var tw = dc.getTextWidthInPixels(t, font[0]);
-    drawTrend(
-      dc,
-      showLap ? viLapTrend.direction() : viTrend.direction(),
-      dc.getWidth() / 2 - tw / 2 - dc.getWidth() / 12 - dc.getTextWidthInPixels(".", font[0]) / 2,
-      dc.getHeight() - font[1] - 1,
-      dc.getWidth() / 12,
-      font[1]
-    );
-  }
-
-  function drawWideDisplay(dc) {
-    var font = determineFont(
-      dc,
-      [ Graphics.FONT_LARGE, Graphics.FONT_MEDIUM, Graphics.FONT_SMALL, Graphics.FONT_TINY ],
-      2
-    );
-    dc.drawText(
-      dc.getWidth() / 4,
-      1,
-      font[0],
-      showLap ? "VI Lap" : "VI",
-      Graphics.TEXT_JUSTIFY_CENTER
-    );
-    font = determineFont(
-      dc,
-      [ Graphics.FONT_NUMBER_THAI_HOT, Graphics.FONT_NUMBER_HOT, Graphics.FONT_NUMBER_MEDIUM, Graphics.FONT_NUMBER_MILD, Graphics.FONT_MEDIUM, Graphics.FONT_SMALL, Graphics.FONT_TINY ],
-      2
-    );
-    var t = (showLap ? viLapValue : viValue).toString();
-    dc.drawText(
-      dc.getWidth() / 4 + dc.getTextWidthInPixels(".", font[0]),
-      dc.getHeight() - font[1] - 1,
-      font[0],
-      t,
-      Graphics.TEXT_JUSTIFY_CENTER
-    );
-    var tw = dc.getTextWidthInPixels(t, font[0]);
-    drawTrend(
-      dc,
-      showLap ? viLapTrend.direction() : viTrend.direction(),
-      dc.getWidth() / 4 - tw / 2 - dc.getWidth() / 24,
-      dc.getHeight() - font[1] - 1,
-      dc.getWidth() / 24,
-      font[1]
-    );
-
-    font = determineFont(
-      dc,
-      [ Graphics.FONT_LARGE, Graphics.FONT_MEDIUM, Graphics.FONT_SMALL, Graphics.FONT_TINY ],
-      2
-    );
-    dc.drawText(
-      dc.getWidth() / 2 + 1,
-      dc.getHeight() / 4 - font[1] / 2,
-      font[0],
-      "NP",
-      Graphics.TEXT_JUSTIFY_LEFT
-    );
-    var twNP = dc.getTextWidthInPixels("NP", font[0]);
-    dc.drawText(
-      dc.getWidth() / 2 + 1,
-      dc.getHeight() * 3 / 4 - font[1] / 2,
-      font[0],
-      "AP",
-      Graphics.TEXT_JUSTIFY_LEFT
-    );
-    var twAP = dc.getTextWidthInPixels("AP", font[0]);
-    font = determineFont(
-      dc,
-      [ Graphics.FONT_NUMBER_THAI_HOT, Graphics.FONT_NUMBER_HOT, Graphics.FONT_NUMBER_MEDIUM, Graphics.FONT_NUMBER_MILD, Graphics.FONT_MEDIUM, Graphics.FONT_SMALL, Graphics.FONT_TINY ],
-      2
-    );
-    drawTrend(
-      dc,
-      (showLap ? avgNrmLapTrend : avgNrmTrend).direction(),
-      dc.getWidth() / 2 + 1 + twNP + dc.getTextWidthInPixels(".", font[0]),
-      dc.getHeight() - 2 * font[1] - 1,
-      dc.getWidth() / 24,
-      font[1]
-    );
-    dc.drawText(
-      dc.getWidth() - 4,
-      dc.getHeight() - 2 * font[1] - 1,
-      font[0],
-      (showLap ? avgNrmLapPowerValue : avgNrmPowerValue).toString(),
-      Graphics.TEXT_JUSTIFY_RIGHT
-    );
-    drawTrend(
-      dc,
-      (showLap ? avgLapTrend : avgTrend).direction(),
-      dc.getWidth() / 2 + 1 + twAP + dc.getTextWidthInPixels(".", font[0]),
-      dc.getHeight() - font[1] - 1,
-      dc.getWidth() / 24,
-      font[1]
-    );
-    dc.drawText(
-      dc.getWidth() - 4,
-      dc.getHeight() - font[1] - 1,
-      font[0],
-      (showLap ? avgLapPowerValue : avgPowerValue).toString(),
-      Graphics.TEXT_JUSTIFY_RIGHT
-    );
   }
 }

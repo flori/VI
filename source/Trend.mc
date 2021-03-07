@@ -3,6 +3,7 @@ class Trend {
   const ZERO = 0;
   const DOWN = -1;
   const UP   = 1;
+  const NOPE = 2;
 
   hidden var buffer;
   hidden var index;

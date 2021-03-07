@@ -6,7 +6,7 @@ class VIDataFieldDelegate extends WatchUi.BehaviorDelegate {
   }
 
   function onTap(event) {
-    Application.getApp().toggleLapState();
+    Application.getApp().toggleDisplayState();
     return true;
   }
 
