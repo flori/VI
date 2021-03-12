@@ -5,6 +5,8 @@
   <string id="trendDurationError">Legal values are between 1-3600 seconds</string>
   <string id="excludeZeroTitle">Exclude zero power values from computation (if you're not pedaling)</string>
   <string id="excludeZeroError">Legal values are true or false</string>
+  <string id="resetNrmOnLapTitle">Reset the normalized power calculation when pressing the lap button</string>
+  <string id="resetNrmOnLapError">Legal values are true or false</string>
   <string id="ftpTitle">Your FTP (functional threshold power/TP) value in W</string>
   <string id="ftpError">Legal values are between 0-999 W</string>
 </strings>

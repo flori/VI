@@ -1,5 +1,6 @@
 <properties>
   <property id="trendDuration" type="number">60</property>
   <property id="excludeZero" type="boolean">false</property>
+  <property id="resetNrmOnLap" type="boolean">true</property>
   <property id="ftp" type="number">255</property>
 </properties>

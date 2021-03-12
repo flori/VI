@@ -26,6 +26,7 @@ class VIDataFieldView extends WatchUi.DataField {
   hidden var avgLapTrend;
 
   hidden var nrm;
+  hidden var nrmLap;
   hidden var avgNrm;
   hidden var avgNrmTrend;
   hidden var avgNrmLap;
@@ -34,6 +35,8 @@ class VIDataFieldView extends WatchUi.DataField {
   hidden var displayState;
 
   hidden var excludeZero;
+
+  hidden var resetNrmOnLap;
 
   enum {
     STD,
@@ -59,6 +62,8 @@ class VIDataFieldView extends WatchUi.DataField {
   }
 
   function compute(info) {
+    ftpValue.set(ftp);
+
     if (info.timerState != Activity.TIMER_STATE_ON) {
       return;
     }
@@ -84,44 +89,42 @@ class VIDataFieldView extends WatchUi.DataField {
     avgLapTrend.add(averageLapPower);
     avgLapPowerValue.set(averageLapPower);
 
-    // Current Normalized Power
     var normalizedPower = nrm.add(currentPower).compute();
+    if (normalizedPower != null) {
 
-    if (normalizedPower == null) {
-      return;
+      // Average Normalized Power
+      var avgNormalizedPower = avgNrm.add(normalizedPower).compute();
+      avgNrmTrend.add(avgNormalizedPower);
+      avgNrmPowerValue.set(avgNormalizedPower);
+
+      var vi = viValue.compute(avgNormalizedPower, averagePower);
+      if (vi != null) {
+        viTrend.add(vi);
+      }
+
+      var intensity = ifValue.compute(avgNormalizedPower, ftp);
+      if (intensity != null) {
+        ifTrend.add(intensity);
+      }
     }
 
-    // Average Normalized Power
-    var avgNormalizedPower = avgNrm.add(normalizedPower).compute();
-    avgNrmTrend.add(avgNormalizedPower);
-    avgNrmPowerValue.set(avgNormalizedPower);
+    var normalizedLapPower = nrmLap.add(currentPower).compute();
+    if (normalizedLapPower != null) {
+      // Average Normalized Lap Power
+      var avgNormalizedLapPower = avgNrmLap.add(normalizedLapPower).compute();
+      avgNrmLapTrend.add(avgNormalizedLapPower);
+      avgNrmLapPowerValue.set(avgNormalizedLapPower);
 
-    // Average Normalized Lap Power
-    var avgNormalizedLapPower = avgNrmLap.add(normalizedPower).compute();
-    avgNrmLapTrend.add(avgNormalizedLapPower);
-    avgNrmLapPowerValue.set(avgNormalizedLapPower);
+      var viLap = viLapValue.compute(avgNormalizedLapPower, averageLapPower);
+      if (viLap != null) {
+        viLapTrend.add(viLap);
+      }
 
-    var vi = viValue.compute(avgNormalizedPower, averagePower);
-    if (vi != null) {
-      viTrend.add(vi);
+      var intensityLap = ifLapValue.compute(avgNormalizedLapPower, ftp);
+      if (intensityLap != null) {
+        ifLapTrend.add(intensityLap);
+      }
     }
-
-    var viLap = viLapValue.compute(avgNormalizedLapPower, averageLapPower);
-    if (viLap != null) {
-      viLapTrend.add(viLap);
-    }
-
-    var intensity = ifValue.compute(avgNormalizedPower, ftp);
-    if (intensity != null) {
-      ifTrend.add(intensity);
-    }
-
-    var intensityLap = ifLapValue.compute(avgNormalizedLapPower, ftp);
-    if (intensityLap != null) {
-      ifLapTrend.add(intensityLap);
-    }
-
-    ftpValue.set(ftp);
   }
 
   function onUpdate(dc) {
@@ -178,21 +181,31 @@ class VIDataFieldView extends WatchUi.DataField {
   }
 
   function resetLap() {
+    if (resetNrmOnLap) {
+      nrmLap = new Normalized();
+    } else {
+      nrmLap = nrm;
+    }
     avgLap = new Average();
     avgNrmLap = new Average();
     avgLapPowerValue.set(null);
     avgNrmLapPowerValue.set(null);
+    ifLapValue.set(null);
+    viLapValue.set(null);
 
     resetLapTrend();
   }
 
   function reset() {
-    resetLap();
     nrm = new Normalized();
     avg = new Average();
     avgNrm = new Average();
     avgPowerValue.set(null);
     avgNrmPowerValue.set(null);
+    viValue.set(null);
+    ifValue.set(null);
+
+    resetLap();
 
     resetTrend();
   }
@@ -237,11 +250,19 @@ class VIDataFieldView extends WatchUi.DataField {
     }
   }
 
+  function configureResetNrmOnLap() {
+    resetNrmOnLap = false;
+    if (Application has :Properties) {
+      resetNrmOnLap = Application.Properties.getValue("resetNrmOnLap");
+    }
+  }
+
   function reconfigure() {
     resetTrend();
     resetLapTrend();
     configureExcludeZero();
     configureFTP();
+    configureResetNrmOnLap();
   }
 
   function toggleDisplayState() {

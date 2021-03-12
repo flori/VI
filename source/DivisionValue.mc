@@ -15,6 +15,11 @@ class DivisionValue {
     return value;
   }
 
+  function set(v) {
+    value = v;
+    return self;
+  }
+
   function toString() {
     if (value == null) {
       return initialValue;

@@ -5,6 +5,9 @@
   <setting propertyKey="@Properties.excludeZero" title="@Strings.excludeZeroTitle">
     <settingConfig type="boolean" errorMessage="@Strings.excludeZeroError" required="true"/>
   </setting>
+  <setting propertyKey="@Properties.resetNrmOnLap" title="@Strings.resetNrmOnLapTitle">
+    <settingConfig type="boolean" errorMessage="@Strings.resetNrmOnLapError" required="true"/>
+  </setting>
   <setting propertyKey="@Properties.ftp" title="@Strings.ftpTitle">
     <settingConfig type="numeric" errorMessage="@Strings.ftpError" required="true" min="0" max="999"/>
   </setting>
