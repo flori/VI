@@ -50,6 +50,7 @@ class VIDataFieldView extends WatchUi.DataField {
     displayState = LAP;
     configureExcludeZero();
     configureFTP();
+    configureResetNrmOnLap();
     reset();
   }
 
@@ -206,7 +207,6 @@ class VIDataFieldView extends WatchUi.DataField {
     ifValue.set(null);
 
     resetLap();
-
     resetTrend();
   }
 
@@ -258,11 +258,11 @@ class VIDataFieldView extends WatchUi.DataField {
   }
 
   function reconfigure() {
-    resetTrend();
-    resetLapTrend();
     configureExcludeZero();
     configureFTP();
     configureResetNrmOnLap();
+    resetTrend();
+    resetLapTrend();
   }
 
   function toggleDisplayState() {
