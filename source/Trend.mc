@@ -1,9 +1,9 @@
 class Trend {
-  const SIZE = 60;
-  const ZERO = 0;
-  const DOWN = -1;
-  const UP   = 1;
-  const NOPE = 2;
+  static const SIZE = 60;
+  static const ZERO = 0;
+  static const DOWN = -1;
+  static const UP   = 1;
+  static const NOPE = 2;
 
   hidden var buffer;
   hidden var index;
