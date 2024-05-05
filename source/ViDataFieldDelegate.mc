@@ -10,7 +10,7 @@ class VIDataFieldDelegate extends WatchUi.BehaviorDelegate {
     return true;
   }
 
-  function onMenu(event) {
+  function onMenu() {
     return true;
   }
 }
